@@ -1,0 +1,97 @@
+generator client {
+  provider = "prisma-client-js"
+}
+
+datasource db {
+  provider = "mysql"
+  url      = env("DATABASE_URL")
+}
+
+model User {
+  id             Int        @id @default(autoincrement())
+  email          String     @unique
+  password       String
+  name           String
+  role           Role       @default(USER)
+  phone          String?
+  profilePicture String? // S3 or local URL
+  notes          Note[]     @relation("OwnerNotes")
+  visibleNotes   NoteUser[]
+  refreshToken   String?    @db.Text
+  resetTokenExp  DateTime?
+  resetToken     String?
+  createdAt      DateTime   @default(now())
+  updatedAt      DateTime   @updatedAt
+}
+
+enum Role {
+  USER
+  ADMIN
+}
+
+model Note {
+  id          String     @id @default(uuid())
+  title       String
+  description String
+  visibility  Visibility
+  ownerId     Int
+  archived    Boolean    @default(false)
+
+  owner    User          @relation("OwnerNotes", fields: [ownerId], references: [id])
+  users    NoteUser[]
+  versions NoteVersion[]
+  tags     NoteTag[]
+
+  createdAt DateTime @default(now())
+  updatedAt DateTime @updatedAt
+}
+
+model NoteUser {
+  id      String  @id @default(uuid())
+  noteId  String
+  userId  Int
+  canEdit Boolean @default(false)
+
+  note Note @relation(fields: [noteId], references: [id])
+  user User @relation(fields: [userId], references: [id])
+
+  @@unique([noteId, userId])
+}
+
+model NoteVersion {
+  id          String   @id @default(uuid())
+  noteId      String
+  title       String
+  description String
+  visibility    Visibility // Add visibility tracking
+  createdBy   Int
+  createdAt   DateTime @default(now())
+  tagsSnapshot  String?    @db.Text // Store tags as JSON string
+  isRevertPoint Boolean    @default(false) // Mark versions created during revert
+  
+  note Note @relation(fields: [noteId], references: [id], onDelete: Cascade)
+  
+  @@index([noteId, createdAt])
+}
+
+model Tag {
+  id    String    @id @default(uuid())
+  name  String    @unique
+  notes NoteTag[]
+}
+
+model NoteTag {
+  id     String @id @default(uuid())
+  note   Note   @relation(fields: [noteId], references: [id])
+  noteId String
+  tag    Tag    @relation(fields: [tagId], references: [id])
+  tagId  String
+
+  @@unique([noteId, tagId])
+}
+
+enum Visibility {
+  PUBLIC
+  PRIVATE
+  CUSTOM
+}
