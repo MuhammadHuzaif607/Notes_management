@@ -16,7 +16,7 @@ import { Prisma } from '@prisma/client';
 export class NoteService {
   constructor(
     private readonly prisma: PrismaService,
-    private notificationsService: NotificationsService
+   private readonly notificationsService: NotificationsService,
   ) {}
 
   // Modified getAllNotes method - exclude archived notes by default

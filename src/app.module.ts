@@ -4,8 +4,9 @@ import { UserModule } from './user/user.module';
 import { PrismaModule } from './prisma/prisma.module';
 import { MailerModule } from './mailer/mailer.module';
 import { NoteModule } from './note/note.module';
+import { NotificationsModule } from './notifications/notifications.module';
 
 @Module({
-  imports: [AuthModule, UserModule, PrismaModule, MailerModule, NoteModule],
+  imports: [AuthModule, UserModule, PrismaModule, MailerModule, NoteModule,NotificationsModule],
 })
 export class AppModule {}

@@ -31,7 +31,7 @@ export class NotificationsGateway
   implements OnGatewayConnection, OnGatewayDisconnect
 {
   @WebSocketServer()
-  server: Server;
+  server!: Server;
 
   private connectedUsers = new Map<number, string[]>(); // userId -> socketIds[]
   private readonly logger = new Logger(NotificationsGateway.name);
@@ -65,7 +65,7 @@ export class NotificationsGateway
       if (!this.connectedUsers.has(userId)) {
         this.connectedUsers.set(userId, []);
       }
-      this.connectedUsers.get(userId).push(client.id);
+      this.connectedUsers.get(userId)!.push(client.id);
 
       // Join user to their personal room
       await client.join(`user_${userId}`);
@@ -81,7 +81,11 @@ export class NotificationsGateway
       // Send any pending notifications (if you implement offline storage)
       await this.sendPendingNotifications(userId);
     } catch (error) {
-      this.logger.error('Connection authentication failed:', error.message);
+      if (error instanceof Error) {
+        this.logger.error('Connection authentication failed:', error.message);
+      } else {
+        this.logger.error('Connection authentication failed:', String(error));
+      }
       client.emit('error', { message: 'Authentication failed' });
       client.disconnect();
     }
