@@ -8,7 +8,7 @@ import { RedisModule } from '../redis/redis.module';  // Add this import
 
 @Module({
   imports: [
-    RedisModule,  // Add RedisModule here
+    RedisModule,  
     JwtModule.register({
       secret: process.env.JWT_SECRET,
       signOptions: { expiresIn: '24h' },
